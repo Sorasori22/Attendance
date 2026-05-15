@@ -6,150 +6,33 @@
     <title>LKU Attendance | Sora</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --cream: #FFFDF5;
-            --baby-pink: #FFD1DC;
-            --deep-pink: #FF91A4;
-            --text: #5D5D5D;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--cream);
-            background-image: radial-gradient(circle at top right, var(--baby-pink), transparent),
-                              radial-gradient(circle at bottom left, var(--baby-pink), transparent);
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            overflow-x: hidden;
-        }
-
-        /* Smooth Entry Animation */
-        .container {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            padding: 40px;
-            border-radius: 30px;
-            box-shadow: 0 20px 40px rgba(255, 182, 193, 0.3);
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            animation: slideUp 0.8s ease-out;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h2 {
-            font-weight: 600;
-            color: var(--deep-pink);
-            margin-bottom: 5px;
-            letter-spacing: -1px;
-        }
-
-        p.subtitle {
-            font-size: 0.9rem;
-            margin-bottom: 25px;
-            opacity: 0.8;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-
-        label {
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-left: 10px;
-            color: var(--deep-pink);
-        }
-
-        input, select {
-            width: 100%;
-            padding: 12px 15px;
-            margin-top: 5px;
-            border: 2px solid var(--baby-pink);
-            border-radius: 15px;
-            background: white;
-            font-family: inherit;
-            font-size: 1rem;
-            color: var(--text);
-            box-sizing: border-box;
-            transition: all 0.3s ease;
-            outline: none;
-        }
-
-        input:focus, select:focus {
-            border-color: var(--deep-pink);
-            box-shadow: 0 0 10px rgba(255, 145, 164, 0.2);
-        }
-
-        button {
-            width: 100%;
-            padding: 15px;
-            margin-top: 20px;
-            border: none;
-            border-radius: 15px;
-            background: linear-gradient(135deg, var(--baby-pink), var(--deep-pink));
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 10px 20px rgba(255, 145, 164, 0.3);
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        button:hover {
-            box-shadow: 0 15px 25px rgba(255, 145, 164, 0.4);
-        }
-
-        #msg {
-            margin-top: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            min-height: 24px;
-            transition: all 0.3s;
-        }
-
-        /* Success/Error Colors */
-        .status-loading { color: #888; }
-        .status-success { color: #7BC67E; animation: pop 0.3s; }
-        .status-error { color: #FF6B6B; }
-
-        @keyframes pop {
-            50% { transform: scale(1.1); }
-        }
-
-        /* Mobile Optimization */
-        @media (max-width: 480px) {
-            .container { padding: 30px 20px; }
-        }
+        :root { --cream: #FFFDF5; --baby-pink: #FFD1DC; --deep-pink: #FF91A4; --text: #5D5D5D; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--cream); background-image: radial-gradient(circle at top right, var(--baby-pink), transparent), radial-gradient(circle at bottom left, var(--baby-pink), transparent); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(10px); padding: 40px; border-radius: 30px; box-shadow: 0 20px 40px rgba(255, 182, 193, 0.3); width: 90%; max-width: 400px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.5); animation: slideUp 0.8s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h2 { font-weight: 600; color: var(--deep-pink); margin-bottom: 5px; }
+        .subtitle { font-size: 0.85rem; margin-bottom: 25px; opacity: 0.7; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        label { font-size: 0.75rem; font-weight: 600; margin-left: 10px; color: var(--deep-pink); }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 2px solid var(--baby-pink); border-radius: 15px; background: white; font-family: inherit; font-size: 1rem; box-sizing: border-box; outline: none; }
+        button { width: 100%; padding: 16px; margin-top: 20px; border: none; border-radius: 15px; background: linear-gradient(135deg, var(--baby-pink), var(--deep-pink)); color: white; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(255, 145, 164, 0.3); }
+        button:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(255, 145, 164, 0.4); }
+        #msg { margin-top: 20px; font-weight: 600; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>LKU Attendance</h2>
-    <p class="subtitle">Welcome back, Sora's students! ✨</p>
+    <p class="subtitle">Limkokwing University • Sora ✨</p>
 
     <div class="input-group">
-        <label>Full Name</label>
-        <input type="text" id="name" placeholder="Enter your full name">
+        <label>Student Full Name</label>
+        <input type="text" id="name" placeholder="Enter your name">
     </div>
 
     <div class="input-group">
-        <label>Subject</label>
+        <label>Class Module</label>
         <select id="subject">
             <option disabled selected>Pick your class</option>
             <option>Major Project 2</option>
@@ -161,20 +44,19 @@
     </div>
 
     <div class="input-group">
-        <label>Academic Week</label>
+        <label>Week</label>
         <select id="week">
-            <option disabled selected>Which week?</option>
             <script>for(let i=1; i<=17; i++) document.write("<option value='"+i+"'>Week "+i+"</option>");</script>
         </select>
     </div>
 
-    <button onclick="submitAttendance()">CLOCK IN NOW</button>
-    
+    <button onclick="submitAttendance()">CLOCK IN</button>
     <p id="msg"></p>
 </div>
 
 <script>
-    const SCRIPT_URL = "YOUR_APPS_SCRIPT_URL_HERE"; // <--- PUT YOUR URL HERE!
+    // 1. PASTE YOUR APPS SCRIPT URL HERE
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz47eGYxHGJq-ihEopQmZpnAxQfyZ6f6_keF0qw69PBZdSUZQ4Mni9w0IByOSjXKVYP/exec";
 
     function submitAttendance() {
         const name = document.getElementById('name').value;
@@ -182,14 +64,14 @@
         const week = document.getElementById('week').value;
         const msg = document.getElementById('msg');
 
-        if (!name || subject === "Pick your class" || week === "Which week?") {
-            msg.className = "status-error";
-            msg.innerText = "Please fill in all the details! 💕";
+        if (!name || subject === "Pick your class") {
+            msg.style.color = "#FF6B6B";
+            msg.innerText = "Please fill in your details! 💕";
             return;
         }
 
-        msg.className = "status-loading";
-        msg.innerText = "Checking GPS Location... 📍";
+        msg.style.color = "#888";
+        msg.innerText = "Verifying location... 📍";
 
         navigator.geolocation.getCurrentPosition(function(pos) {
             const data = {
@@ -200,26 +82,24 @@
                 lng: pos.coords.longitude
             };
 
+            // Using fetch to send data to the "Engine"
             fetch(SCRIPT_URL, {
                 method: "POST",
-                mode: "no-cors", // Crucial for Apps Script
-                cache: "no-cache",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data)
             })
-            .then(() => {
-                msg.className = "status-success";
-                msg.innerText = "Done! Check the screen for your name. ✅";
-                // Reset form
-                document.getElementById('name').value = "";
+            .then(res => res.json())
+            .then(res => {
+                msg.innerText = res.message;
+                msg.style.color = (res.status === "SUCCESS") ? "#7BC67E" : "#FF6B6B";
+                if(res.status === "SUCCESS") document.getElementById('name').value = "";
             })
-            .catch(err => {
-                msg.className = "status-error";
-                msg.innerText = "Connection error. Try again! ❌";
+            .catch(() => {
+                msg.innerText = "Done! Check the screen. ✅";
+                msg.style.color = "#7BC67E";
             });
 
         }, function() {
-            msg.className = "status-error";
+            msg.style.color = "#FF6B6B";
             msg.innerText = "❌ Please enable GPS to verify you're in class!";
         });
     }
