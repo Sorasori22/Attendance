@@ -10,37 +10,50 @@
         body { font-family: 'Poppins', sans-serif; background-color: var(--cream); background-image: radial-gradient(circle at top right, var(--baby-pink), transparent), radial-gradient(circle at bottom left, var(--baby-pink), transparent); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .container { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); padding: 40px; border-radius: 30px; box-shadow: 0 20px 40px rgba(255, 182, 193, 0.3); width: 90%; max-width: 400px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.5); }
         h2 { font-weight: 600; color: var(--deep-pink); margin-bottom: 5px; }
-        .subtitle { font-size: 0.85rem; margin-bottom: 25px; opacity: 0.7; }
         .input-group { margin-bottom: 15px; text-align: left; }
         label { font-size: 0.75rem; font-weight: 600; margin-left: 10px; color: var(--deep-pink); }
         input, select { width: 100%; padding: 12px; margin-top: 5px; border: 2px solid var(--baby-pink); border-radius: 15px; background: white; font-family: inherit; font-size: 1rem; box-sizing: border-box; outline: none; }
         button { width: 100%; padding: 16px; margin-top: 20px; border: none; border-radius: 15px; background: linear-gradient(135deg, var(--baby-pink), var(--deep-pink)); color: white; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(255, 145, 164, 0.3); }
-        button:hover { transform: translateY(-2px); }
-        #msg { margin-top: 20px; font-weight: 600; font-size: 0.9rem; min-height: 1.2em; }
+        #msg { margin-top: 20px; font-weight: 600; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>LKU Attendance</h2>
-    <p class="subtitle">Limkokwing University • Sora ✨</p>
-    <div class="input-group"><label>Full Name</label><input type="text" id="name" placeholder="Name"></div>
+    <p style="font-size:0.8rem; margin-bottom:20px; opacity:0.7;">Limkokwing University ✨</p>
+    
+    <div class="input-group"><label>Name</label><input type="text" id="name" placeholder="Full Name"></div>
     <div class="input-group">
-        <label>Class</label>
+        <label>Subject</label>
         <select id="subject">
-            <option disabled selected>Pick class</option>
+            <option disabled selected>Select Module</option>
             <option>Major Project 2</option><option>Intro to IT</option>
             <option>Computer Application</option><option>Wordpress Website</option>
             <option>Major Project 1</option>
         </select>
     </div>
     <div class="input-group"><label>Week</label><select id="week"><script>for(let i=1; i<=17; i++) document.write("<option value='"+i+"'>Week "+i+"</option>");</script></select></div>
+    
     <button onclick="submitAttendance()">CLOCK IN NOW</button>
     <p id="msg"></p>
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-bWaGqW0IgK69ks7ZyLc6sGDJwZm91gW7SjAIjOzUkEpsCVAh3gGvWUWXU7letCcZ/exec"; 
+    // 1. UPDATE THIS URL
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLw39jrq7dJQtqklyiyvOIizmPDO_5vYryKj3Kr4R92JiS_n_GDnvaF2vLXhth8jGH/exec";
+
+    // 2. This function handles the response from Google
+    function handleResponse(res) {
+        const msg = document.getElementById('msg');
+        msg.innerText = res.message;
+        msg.style.color = (res.status === "SUCCESS") ? "#7BC67E" : "#FF6B6B";
+        if(res.status === "SUCCESS") document.getElementById('name').value = "";
+        
+        // Cleanup the script tag
+        const oldScript = document.getElementById('jsonp-script');
+        if (oldScript) oldScript.remove();
+    }
 
     function submitAttendance() {
         const name = document.getElementById('name').value;
@@ -48,7 +61,7 @@
         const week = document.getElementById('week').value;
         const msg = document.getElementById('msg');
 
-        if (!name || subject === "Pick class") {
+        if (!name || subject === "Select Module") {
             msg.style.color = "#FF6B6B";
             msg.innerText = "Please fill in all fields! 💕";
             return;
@@ -63,24 +76,17 @@
                 lat: pos.coords.latitude, lng: pos.coords.longitude
             };
 
-            // Using GET method to bypass CORS and get a real response
-            const finalUrl = SCRIPT_URL + "?data=" + encodeURIComponent(JSON.stringify(data));
-
-            fetch(finalUrl)
-            .then(res => res.json())
-            .then(res => {
-                msg.innerText = res.message;
-                msg.style.color = (res.status === "SUCCESS") ? "#7BC67E" : "#FF6B6B";
-                if(res.status === "SUCCESS") document.getElementById('name').value = "";
-            })
-            .catch(() => {
-                msg.innerText = "Connection error. Ensure your link is correct!";
-                msg.style.color = "#FF6B6B";
-            });
+            // Using JSONP to bypass all Connection/CORS errors
+            const finalUrl = SCRIPT_URL + "?callback=handleResponse&data=" + encodeURIComponent(JSON.stringify(data));
+            
+            const script = document.createElement('script');
+            script.id = 'jsonp-script';
+            script.src = finalUrl;
+            document.body.appendChild(script);
 
         }, function() {
             msg.style.color = "#FF6B6B";
-            msg.innerText = "❌ Please enable GPS to verify you're in class!";
+            msg.innerText = "❌ Please enable GPS!";
         });
     }
 </script>
