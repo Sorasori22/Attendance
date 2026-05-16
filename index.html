@@ -7,8 +7,8 @@
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
     .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
-    h2 { margin-top: 0; color: #333; text-align: center; }
-    .timer-box { background: #eef2f7; border-left: 5px solid #007bff; padding: 10px; margin-bottom: 20px; border-radius: 4px; font-weight: bold; text-align: center; font-size: 1.1em; color: #2c3e50; }
+    h2 { margin-top: 0; color: #333; text-align: center; margin-bottom: 5px;}
+    p.subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 25px; }
     label { font-weight: 600; display: block; margin-bottom: 5px; color: #555; }
     input, select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
     button { width: 100%; background: #007bff; color: white; border: none; padding: 12px; font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
@@ -17,7 +17,6 @@
     .status { text-align: center; font-weight: bold; margin-top: 15px; font-size: 15px; }
     .loading { color: #666; }
     .success { color: #28a745; }
-    .error { color: #dc3545; }
     iframe { display: none; } 
   </style>
 </head>
@@ -25,9 +24,9 @@
 
 <div class="card" id="formContainer">
   <h2>Class Attendance</h2>
-  <div id="timerDisplay" class="timer-box">Connecting to sheet backend...</div>
+  <p class="subtitle">Please fill out your details to check-in</p>
   
-  <form id="attendanceForm" action="https://script.google.com/macros/s/AKfycbxqZ3aADg0gTP2XmXZJ8K04VKKZSmuadQLc4Ofv4EQJt0XtRpMdKH0XDcsHNycFBMDjjw/exec" method="POST" target="hidden_iframe" style="display: none;">
+  <form id="attendanceForm" action="https://script.google.com/macros/s/AKfycbxezzq5yjb6_wG2s-bETTcY4pAeEutEI4VXOVpha69fLZBHb3Wdz2tAF-R9SwGLEuriIw/exec" method="POST" target="hidden_iframe">
     <label for="name">Full Name</label>
     <input type="text" name="name" id="name" placeholder="Enter your full name" required>
 
@@ -52,68 +51,25 @@
 <iframe name="hidden_iframe" id="hidden_iframe"></iframe>
 
 <script>
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyGSDaPy1UVgH2S7ndMzGww8M595qcOv3_gGSfFuggvQIhJ-DHBvw3NVmpgW8lhGbq9CQ/exec"; 
-  
-  let totalSeconds = 0;
-  let timerInterval;
   let formSubmitted = false;
 
-  // Bypasses browser strict preflight tracking filters securely
-  fetch(WEB_APP_URL, {
-    method: "GET",
-    headers: { "Content-Type": "text/plain;charset=utf-8" }
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.status !== "ON") {
-        document.getElementById("timerDisplay").style.backgroundColor = "#f8d7da";
-        document.getElementById("timerDisplay").style.borderLeftColor = "#dc3545";
-        document.getElementById("timerDisplay").innerText = "The attendance session is currently CLOSED.";
-      } else {
-        totalSeconds = data.elapsedSeconds;
-        document.getElementById("attendanceForm").style.display = "block";
-        timerInterval = setInterval(updateTimerDisplay, 1000);
-        getLocation();
+  // Immediately track location parameters cleanly
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        let lat = position.coords.latitude.toFixed(5);
+        let lon = position.coords.longitude.toFixed(5);
+        document.getElementById("location").value = `Lat: ${lat}, Lon: ${lon}`;
+        enableForm();
+      },
+      (error) => {
+        document.getElementById("location").value = "Location Permission Denied";
+        enableForm();
       }
-    })
-    .catch(err => {
-      document.getElementById("timerDisplay").style.backgroundColor = "#f8d7da";
-      document.getElementById("timerDisplay").style.borderLeftColor = "#dc3545";
-      document.getElementById("timerDisplay").innerText = "Connection error to Google Sheet.";
-      console.error(err);
-    });
-
-  function updateTimerDisplay() {
-    totalSeconds++;
-    let mins = Math.floor(totalSeconds / 60);
-    let secs = totalSeconds % 60;
-    let formattedTime = String(mins).padStart(2, '0') + ":" + String(secs).padStart(2, '0');
-    
-    let rulesText = " (Present)";
-    if (totalSeconds >= 1801) rulesText = " (Absent - Session Expired)";
-    else if (totalSeconds >= 901) rulesText = " (Late)";
-    
-    document.getElementById("timerDisplay").innerText = "Elapsed Time: " + formattedTime + rulesText;
-  }
-
-  function getLocation() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          let lat = position.coords.latitude.toFixed(5);
-          let lon = position.coords.longitude.toFixed(5);
-          document.getElementById("location").value = `Lat: ${lat}, Lon: ${lon}`;
-          enableForm();
-        },
-        (error) => {
-          document.getElementById("location").value = "Location Permission Denied";
-          enableForm();
-        }
-      );
-    } else {
-      document.getElementById("location").value = "Geolocation Not Supported";
-      enableForm();
-    }
+    );
+  } else {
+    document.getElementById("location").value = "Geolocation Not Supported";
+    enableForm();
   }
 
   function enableForm() {
@@ -122,7 +78,7 @@
     btn.innerText = "Submit Attendance";
   }
 
-  document.getElementById("attendanceForm").addEventListener("submit", function(e) {
+  document.getElementById("attendanceForm").addEventListener("submit", function() {
     let btn = document.getElementById("submitBtn");
     let msg = document.getElementById("statusMessage");
     
@@ -132,15 +88,15 @@
     formSubmitted = true; 
   });
 
+  // Since it fires data straight to the iframe, this listener intercepts when Google accepts it
   document.getElementById("hidden_iframe").addEventListener("load", function() {
     if (formSubmitted) {
       let msg = document.getElementById("statusMessage");
       msg.className = "status success";
-      msg.innerText = "Attendance recorded successfully!";
+      msg.innerText = "Form submitted! Your status depends on your check-in time.";
       document.getElementById("attendanceForm").reset();
-      clearInterval(timerInterval);
-      document.getElementById("timerDisplay").style.display = "none";
       document.getElementById("attendanceForm").style.display = "none";
+      document.querySelector(".subtitle").style.display = "none";
     }
   });
 </script>
