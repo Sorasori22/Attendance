@@ -18,7 +18,7 @@
     .loading { color: #666; }
     .success { color: #28a745; }
     .error { color: #dc3545; }
-    iframe { display: none; } /* Hidden iframe to catch Google's redirection safely */
+    iframe { display: none; } 
   </style>
 </head>
 <body>
@@ -27,7 +27,6 @@
   <h2>Class Attendance</h2>
   <div id="timerDisplay" class="timer-box">Connecting to sheet backend...</div>
   
-  <!-- Form targets the hidden iframe to prevent redirection page break errors -->
   <form id="attendanceForm" action="https://script.google.com/macros/s/AKfycbxqZ3aADg0gTP2XmXZJ8K04VKKZSmuadQLc4Ofv4EQJt0XtRpMdKH0XDcsHNycFBMDjjw/exec" method="POST" target="hidden_iframe" style="display: none;">
     <label for="name">Full Name</label>
     <input type="text" name="name" id="name" placeholder="Enter your full name" required>
@@ -50,25 +49,26 @@
   <div id="statusMessage" class="status"></div>
 </div>
 
-<!-- Hidden Iframe Trick handles CORS redirect nicely -->
 <iframe name="hidden_iframe" id="hidden_iframe"></iframe>
 
 <script>
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzBb9qb_Ka4OkjNDWWtpGdiRWqTeciBmaGyY6YNRCrNq9INi48nqfLthz4fazrsAnADng/exec"; 
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyGSDaPy1UVgH2S7ndMzGww8M595qcOv3_gGSfFuggvQIhJ-DHBvw3NVmpgW8lhGbq9CQ/exec"; 
   
   let totalSeconds = 0;
   let timerInterval;
   let formSubmitted = false;
 
-  // Sync Timer status from the Live Script URL
-  fetch(WEB_APP_URL)
-    .then(response => {
-      if (!response.ok) throw new Error("Network status response error");
-      return response.json();
-    })
+  // Bypasses browser strict preflight tracking filters securely
+  fetch(WEB_APP_URL, {
+    method: "GET",
+    headers: { "Content-Type": "text/plain;charset=utf-8" }
+  })
+    .then(response => response.json())
     .then(data => {
       if (data.status !== "ON") {
-        showClosedMessage();
+        document.getElementById("timerDisplay").style.backgroundColor = "#f8d7da";
+        document.getElementById("timerDisplay").style.borderLeftColor = "#dc3545";
+        document.getElementById("timerDisplay").innerText = "The attendance session is currently CLOSED.";
       } else {
         totalSeconds = data.elapsedSeconds;
         document.getElementById("attendanceForm").style.display = "block";
@@ -79,15 +79,9 @@
     .catch(err => {
       document.getElementById("timerDisplay").style.backgroundColor = "#f8d7da";
       document.getElementById("timerDisplay").style.borderLeftColor = "#dc3545";
-      document.getElementById("timerDisplay").innerText = "Connection error to Google Sheet. Check if App Script is deployed properly as 'Anyone'.";
+      document.getElementById("timerDisplay").innerText = "Connection error to Google Sheet.";
       console.error(err);
     });
-
-  function showClosedMessage() {
-    document.getElementById("timerDisplay").style.backgroundColor = "#f8d7da";
-    document.getElementById("timerDisplay").style.borderLeftColor = "#dc3545";
-    document.getElementById("timerDisplay").innerText = "The attendance session is currently CLOSED.";
-  }
 
   function updateTimerDisplay() {
     totalSeconds++;
@@ -128,23 +122,21 @@
     btn.innerText = "Submit Attendance";
   }
 
-  // Intercept the form submission visual state
   document.getElementById("attendanceForm").addEventListener("submit", function(e) {
     let btn = document.getElementById("submitBtn");
     let msg = document.getElementById("statusMessage");
     
     btn.disabled = true;
     msg.className = "status loading";
-    msg.innerText = "Submitting attendance to sheet, please wait...";
+    msg.innerText = "Submitting attendance, please wait...";
     formSubmitted = true; 
   });
 
-  // Check the hidden iframe loading status to confirm submission success
   document.getElementById("hidden_iframe").addEventListener("load", function() {
     if (formSubmitted) {
       let msg = document.getElementById("statusMessage");
       msg.className = "status success";
-      msg.innerText = "Attendance recorded successfully! Check with your lecturer.";
+      msg.innerText = "Attendance recorded successfully!";
       document.getElementById("attendanceForm").reset();
       clearInterval(timerInterval);
       document.getElementById("timerDisplay").style.display = "none";
