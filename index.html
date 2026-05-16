@@ -1,100 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LKU Attendance | Sora</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        :root { --cream: #FFFDF5; --baby-pink: #FFD1DC; --deep-pink: #FF91A4; --text: #5D5D5D; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--cream); background-image: radial-gradient(circle at top right, var(--baby-pink), transparent), radial-gradient(circle at bottom left, var(--baby-pink), transparent); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); padding: 35px; border-radius: 30px; box-shadow: 0 20px 40px rgba(255, 182, 193, 0.3); width: 90%; max-width: 380px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.5); }
-        h2 { font-weight: 600; color: var(--deep-pink); margin-top: 0; }
-        .input-group { margin-bottom: 12px; text-align: left; }
-        label { font-size: 0.75rem; font-weight: 600; margin-left: 10px; color: var(--deep-pink); }
-        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 2px solid var(--baby-pink); border-radius: 15px; background: white; font-family: inherit; font-size: 0.95rem; box-sizing: border-box; outline: none; }
-        button { width: 100%; padding: 16px; margin-top: 15px; border: none; border-radius: 15px; background: linear-gradient(135deg, var(--baby-pink), var(--deep-pink)); color: white; font-size: 1.1rem; font-weight: 600; cursor: pointer; box-shadow: 0 10px 20px rgba(255, 145, 164, 0.3); }
-        #msg { margin-top: 15px; font-weight: 600; font-size: 0.85rem; min-height: 1.2em; white-space: pre-line; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Attendance Check-in</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+    h2 { margin-top: 0; color: #333; text-align: center; }
+    .timer-box { background: #eef2f7; border-left: 5px solid #007bff; padding: 10px; margin-bottom: 20px; border-radius: 4px; font-weight: bold; text-align: center; font-size: 1.1em; color: #2c3e50; }
+    label { font-weight: 600; display: block; margin-bottom: 5px; color: #555; }
+    input, select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+    button { width: 100%; background: #007bff; color: white; border: none; padding: 12px; font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    button:hover { background: #0056b3; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    .status { text-align: center; font-weight: bold; margin-top: 15px; font-size: 15px; }
+    .loading { color: #666; }
+    .success { color: #28a745; }
+    .error { color: #dc3545; }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>LKU Attendance</h2>
-    <p style="font-size:0.75rem; margin-bottom:20px; opacity:0.6;">Limkokwing University • Sora ✨</p>
-    
-    <div class="input-group"><label>Full Name</label><input type="text" id="name" placeholder="Name as per ID"></div>
-    <div class="input-group"><label>Email Address</label><input type="email" id="email" placeholder="Personal or School Email"></div>
-    
-    <div class="input-group">
-        <label>Subject</label>
-        <select id="subject">
-            <option disabled selected>Pick class</option>
-            <option>Major Project 2</option><option>Intro to IT</option>
-            <option>Computer Application</option><option>Wordpress Website</option>
-            <option>Major Project 1</option>
-        </select>
-    </div>
-    
-    <div class="input-group"><label>Week</label><select id="week"><script>for(let i=1; i<=17; i++) document.write("<option value='"+i+"'>Week "+i+"</option>");</script></select></div>
-    
-    <button id="btn" onclick="submitAttendance()">CLOCK IN NOW</button>
-    <p id="msg"></p>
+<div class="card" id="formContainer">
+  <h2>Class Attendance</h2>
+  <div id="timerDisplay" class="timer-box">Connecting to sheet backend...</div>
+  
+  <form id="attendanceForm" style="display: none;">
+    <label for="name">Full Name</label>
+    <input type="text" id="name" placeholder="Enter your full name" required>
+
+    <label for="email">Email Address</label>
+    <input type="email" id="email" placeholder="username@student.edu" required>
+
+    <label for="major">Select Your Major</label>
+    <select id="major" required>
+      <option value="" disabled selected>-- Choose your Major --</option>
+      <option value="Information Technology">Information Technology</option>
+      <option value="Computer Science">Computer Science</option>
+      <option value="Creative Multimedia">Creative Multimedia</option>
+      <option value="Business Administration">Business Administration</option>
+    </select>
+
+    <input type="hidden" id="location" value="Unknown Location">
+    <button type="submit" id="submitBtn" disabled>Fetching location...</button>
+  </form>
+  <div id="statusMessage" class="status"></div>
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjZCsOUeRc88xEU8_ssyJKUR-jTcs6v5AuamF4pwI8favUbRWxa6g1Vls9AOdO_zXB/exec";
+  // Pinned API Configuration
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxqZ3aADg0gTP2XmXZJ8K04VKKZSmuadQLc4Ofv4EQJt0XtRpMdKH0XDcsHNycFBMDjjw/exec"; 
+  
+  let totalSeconds = 0;
+  let timerInterval;
 
-    function handleResponse(res) {
-        const msg = document.getElementById('msg');
-        const btn = document.getElementById('btn');
-        msg.innerText = res.message;
-        msg.style.color = (res.status === "SUCCESS") ? "#7BC67E" : "#FF6B6B";
-        btn.disabled = false;
-        btn.style.opacity = "1";
-        if(res.status === "SUCCESS") {
-            document.getElementById('name').value = "";
-            document.getElementById('email').value = "";
+  // Initialize System state from your spreadsheet live settings
+  fetch(WEB_APP_URL)
+    .then(response => response.json())
+    .then(data => {
+      if (data.status !== "ON") {
+        document.getElementById("timerDisplay").style.backgroundColor = "#f8d7da";
+        document.getElementById("timerDisplay").style.borderLeftColor = "#dc3545";
+        document.getElementById("timerDisplay").innerText = "The attendance session is currently CLOSED.";
+      } else {
+        totalSeconds = data.elapsedSeconds;
+        document.getElementById("attendanceForm").style.display = "block";
+        timerInterval = setInterval(updateTimerDisplay, 1000);
+        getLocation();
+      }
+    })
+    .catch(err => {
+      document.getElementById("timerDisplay").innerText = "Connection error to Google Sheet.";
+      console.error(err);
+    });
+
+  function updateTimerDisplay() {
+    totalSeconds++;
+    let mins = Math.floor(totalSeconds / 60);
+    let secs = totalSeconds % 60;
+    let formattedTime = String(mins).padStart(2, '0') + ":" + String(secs).padStart(2, '0');
+    
+    let rulesText = " (Present)";
+    if (totalSeconds >= 1801) rulesText = " (Absent - Late Expired)";
+    else if (totalSeconds >= 901) rulesText = " (Late)";
+    
+    document.getElementById("timerDisplay").innerText = "Elapsed Time: " + formattedTime + rulesText;
+  }
+
+  function getLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          let lat = position.coords.latitude.toFixed(5);
+          let lon = position.coords.longitude.toFixed(5);
+          document.getElementById("location").value = `Lat: ${lat}, Lon: ${lon}`;
+          enableForm();
+        },
+        (error) => {
+          document.getElementById("location").value = "Location Permission Denied";
+          enableForm();
         }
+      );
+    } else {
+      document.getElementById("location").value = "Geolocation Not Supported";
+      enableForm();
     }
+  }
 
-    function submitAttendance() {
-        const name = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
-        const subject = document.getElementById('subject').value;
-        const week = document.getElementById('week').value;
-        const msg = document.getElementById('msg');
-        const btn = document.getElementById('btn');
+  function enableForm() {
+    let btn = document.getElementById("submitBtn");
+    btn.disabled = false;
+    btn.innerText = "Submit Attendance";
+  }
 
-        if (!name || !email || subject === "Pick class") {
-            msg.style.color = "#FF6B6B";
-            msg.innerText = "Please fill all fields! 💕";
-            return;
-        }
+  document.getElementById("attendanceForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    let btn = document.getElementById("submitBtn");
+    let msg = document.getElementById("statusMessage");
+    
+    btn.disabled = true;
+    msg.className = "status loading";
+    msg.innerText = "Submitting, please wait...";
 
-        btn.disabled = true;
-        btn.style.opacity = "0.5";
-        msg.style.color = "#888";
-        msg.innerText = "Connecting... 📍";
+    let formData = {
+      name: document.getElementById("name").value,
+      email: document.getElementById("email").value,
+      major: document.getElementById("major").value,
+      location: document.getElementById("location").value
+    };
 
-        navigator.geolocation.getCurrentPosition(function(pos) {
-            const data = { name, email, subject, week, lat: pos.coords.latitude, lng: pos.coords.longitude };
-            
-            // JSONP Clean Reset
-            const old = document.getElementById('jsonp'); if(old) old.remove();
-            const script = document.createElement('script');
-            script.id = 'jsonp';
-            // Added random ID to bypass account cache
-            script.src = `${SCRIPT_URL}?callback=handleResponse&data=${encodeURIComponent(JSON.stringify(data))}&id=${Math.random()}`;
-            document.body.appendChild(script);
-
-        }, function() {
-            msg.style.color = "#FF6B6B";
-            msg.innerText = "❌ Please enable GPS!";
-            btn.disabled = false;
-            btn.style.opacity = "1";
-        }, { enableHighAccuracy: true, timeout: 8000 });
-    }
+    // Post to Apps Script Web App without cross-origin login blocks
+    fetch(WEB_APP_URL, {
+      method: "POST",
+      mode: "no-cors", // Bypasses browser cross-domain restriction policies completely
+      cache: "no-cache",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData)
+    })
+    .then(() => {
+      msg.className = "status success";
+      msg.innerText = "Attendance submitted successfully! Check your status on the lecture sheet.";
+      document.getElementById("attendanceForm").reset();
+      clearInterval(timerInterval);
+      document.getElementById("timerDisplay").style.display = "none";
+    })
+    .catch(error => {
+      msg.className = "status error";
+      msg.innerText = "Submission Error. Try again.";
+      btn.disabled = false;
+      console.error(error);
+    });
+  });
 </script>
+
 </body>
 </html>
